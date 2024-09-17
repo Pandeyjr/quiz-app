@@ -1,13 +1,113 @@
-<h1>{{ quiz.title }}</h1>
-<p>{{ quiz.description }}</p>
-<form method="POST">
-    {% csrf_token %}
-    {% for question in quiz.questions.all %}
-        <h3>{{ question.text }}</h3>
-        {% for answer in question.answers.all %}
-            <input type="radio" name="question_{{ question.id }}" value="{{ answer.id }}">
-            {{ answer.text }}<br>
-        {% endfor %}
-    {% endfor %}
-    <button type="submit">Submit</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ quiz.title }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f4f7f6;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1, h3 {
+            color: #333;
+        }
+        .form-check-input {
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+        .modal-content {
+            border-radius: 10px;
+            border: none;
+            background-color: #fff;
+            padding: 20px;
+        }
+        .modal-header {
+            border-bottom: 1px solid #e9ecef;
+        }
+        .modal-footer {
+            border-top: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4 text-center">{{ quiz.title }}</h1>
+        <p class="text-center mb-5">{{ quiz.description }}</p>
+
+        <form id="quizForm" method="POST">
+            {% csrf_token %}
+            {% for question in quiz.questions.all %}
+                <div class="mb-4">
+                    <h3>{{ question.text }}</h3>
+                    {% for answer in question.answers.all %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="question_{{ question.id }}" value="{{ answer.id }}">
+                            <label class="form-check-label">{{ answer.text }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Modal for displaying score -->
+    <div class="modal fade" id="scoreModal" tabindex="-1" aria-labelledby="scoreModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="scoreModalLabel">Quiz Results</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p>Your score is: <strong id="score"></strong> / <strong id="totalQuestions"></strong></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#quizForm').on('submit', function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                $.ajax({
+                    url: '',  // Submit to the current URL
+                    type: 'POST',
+                    data: $(this).serialize(),  // Serialize form data
+                    success: function(response) {
+                        // Show score in the modal
+                        $('#score').text(response.score);
+                        $('#totalQuestions').text(response.total);
+                        $('#scoreModal').modal('show');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
